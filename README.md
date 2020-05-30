@@ -9,5 +9,7 @@ You can use the app in combination with the dbdis app: https://github.com/ribid1
 * Unpack the TStstus_Audio.zip and copy the files in the folder: \Audio
   
 ### Configuration:  
+
+![T-Status_configuration](https://github.com/ribid1/TStatus/blob/master/T-Status_configuration.png)
   
 
