@@ -1,3 +1,27 @@
+--[[
+	----------------------------------------------------------------------------
+	App using a numeric Sensor Data to display as text
+	----------------------------------------------------------------------------
+	MIT License
+   
+	Hiermit wird unentgeltlich jeder Person, die eine Kopie der Software und der
+	zugehörigen Dokumentationen (die "Software") erhält, die Erlaubnis erteilt,
+	sie uneingeschränkt zu nutzen, inklusive und ohne Ausnahme mit dem Recht, sie
+	zu verwenden, zu kopieren, zu verändern, zusammenzufügen, zu veröffentlichen,
+	zu verbreiten, zu unterlizenzieren und/oder zu verkaufen, und Personen, denen
+	diese Software überlassen wird, diese Rechte zu verschaffen, unter den
+	folgenden Bedingungen: 
+	Der obige Urheberrechtsvermerk und dieser Erlaubnisvermerk sind in allen Kopien
+	oder Teilkopien der Software beizulegen. 
+	DIE SOFTWARE WIRD OHNE JEDE AUSDRÜCKLICHE ODER IMPLIZIERTE GARANTIE BEREITGESTELLT,
+	EINSCHLIEßLICH DER GARANTIE ZUR BENUTZUNG FÜR DEN VORGESEHENEN ODER EINEM
+	BESTIMMTEN ZWECK SOWIE JEGLICHER RECHTSVERLETZUNG, JEDOCH NICHT DARAUF BESCHRÄNKT.
+	IN KEINEM FALL SIND DIE AUTOREN ODER COPYRIGHTINHABER FÜR JEGLICHEN SCHADEN ODER
+	SONSTIGE ANSPRÜCHE HAFTBAR ZU MACHEN, OB INFOLGE DER ERFÜLLUNG EINES VERTRAGES,
+	EINES DELIKTES ODER ANDERS IM ZUSAMMENHANG MIT DER SOFTWARE ODER SONSTIGER
+	VERWENDUNG DER SOFTWARE ENTSTANDEN. 
+	----------------------------------------------------------------------------
+--]]
 
 collectgarbage()
 ----------------------------------------------------------------------
@@ -7,58 +31,16 @@ local sid, sparam, switch, senso
 local sensoLalist = {"..."}
 local sensoIdlist = {"..."}
 local sensoPalist = {"..."}
-local iStatus = -1
+local iStatus = -999
+local allstat
+local tSel = {}
+local Turbine
+local Tnum = 1
+local trans, sound
 
 --global:
 Global_TurbineState = ""
 
-----------------------------------------------------------------------------------------------------
--- Here you have to change the Status Number, the text which will be shown and the announcement file
--- if you don't have a wave file, delete the entry.
--- also you can add some lines or delete them if you don't need them:
-
-function GetStatusString(iValue)
-    --if     iValue == 0 then return "No Status"
-    if     iValue == 0 then return "TempHigh","Temperature_high.wav"
-    elseif iValue == 1 then return "Trim Low","Trim_low.wav"
-    elseif iValue == 2 then return "SetIdle!","Set_Idle.wav"
-    elseif iValue == 3 then return "Ready","Ready.wav"
-    elseif iValue == 4 then return "Ignition","Ignition.wav"
-    elseif iValue == 5 then return "FuelRamp","Fuel_ramp.wav"
-    elseif iValue == 6 then return "Glow Test","glow_test.wav"
-    elseif iValue == 7 then return "Running","running.wav"
-    elseif iValue == 8 then return "Stop","stop.wav"
-    elseif iValue == 9 then return "FlameOut","flame_out.wav"
-    elseif iValue == 10 then return "SpeedLow","speed_low.wav"
-    elseif iValue == 11 then return "Cooling","cooling.wav"
-    elseif iValue == 12 then return "Ignitor Bad","ignitor_bad.wav"
-    elseif iValue == 13 then return "Starter Bad","starter_bad.wav"
-    elseif iValue == 14 then return "Weak Gas","weak_gas.wav"
-    elseif iValue == 15 then return "Start On","start_on.wav"
-    elseif iValue == 16 then return "User Off","user_off.wav"
-    elseif iValue == 17 then return "Failsafe","failsafe.wav"
-    elseif iValue == 18 then return "Low RPM","low_rotation.wav"
-    elseif iValue == 19 then return "Reset","reset.wav"
-    elseif iValue == 20 then return "Rx PwFail","receiver_power_fail.wav"
-    elseif iValue == 21 then return "Pre Heat","pre_heat.wav"
-    elseif iValue == 22 then return "Battery!","turbine_batterie.wav"
-    elseif iValue == 23 then return "Time Out","time_out.wav"
-    elseif iValue == 24 then return "Overload","overload.wav"
-    elseif iValue == 25 then return "Ign.Fail","ignition_fail.wav"
-    elseif iValue == 26 then return "BurnerOn","burner_on.wav"
-    elseif iValue == 27 then return "Starting","starting.wav"
-    elseif iValue == 28 then return "SwitchOv","switch_over.wav"
-    elseif iValue == 29 then return "Cal.Pump","call_pump.wav"
-    elseif iValue == 30 then return "Pump Limit","pump_limit.wav"
-    elseif iValue == 31 then return "NoEngine","no_engine.wav"
-    elseif iValue == 32 then return "PwrBoost","power_boost.wav"
-    elseif iValue == 33 then return "Run-Idle","run_idle.wav"
-    elseif iValue == 34 then return "Run-Max","run_max.wav"
-    elseif iValue == 35 then return "Restart","restart.wav"
-    else return string.format("Value:%d", iValue)
-    end
-end
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Draw telemetry-window
 local function printsStatus()
@@ -85,27 +67,65 @@ local function sensorChanged(value)
 	if (sid == "...") then
 		sid = 0
 		sparam = 0
+		Global_TurbineState = ""
     end
 	system.pSave("sid", sid)
 	system.pSave("sparam", sparam)
+	collectgarbage()
 end
 
-local function switchChanged(value)
-	switch = value
-	system.pSave("switch",value)
+local function printvalues()
+	local key, value, n
+	local i=0
+	local a = {}
+	local Tvalues = "\n\n"
+	if Turbine ~= "" then
+		for n in pairs(allstat[Turbine]) do table.insert(a, tonumber(n)) end
+		table.sort(a)
+		for key, value in ipairs(a) do
+			i = i+1
+			Tvalues = Tvalues..value.." - "..allstat[Turbine][tostring(value)]
+			if i < 3 then 
+				Tvalues = Tvalues..",  "
+			else
+				Tvalues = Tvalues.."\n"
+				i=0
+			end
+		end
+		print(Tvalues)
+	end
+	collectgarbage()
 end
+
 
 ----------------------------------------------------------------------
 -- Draw the main form (Application inteface)
 local function initForm()
-    
+	
+	
+	form.addRow(2)
+	form.addLabel({label="Turbine:"})
+	form.addSelectbox(tSel,Tnum,true,
+		function (value)
+			Tnum = value
+			Turbine = tSel[Tnum]
+			system.pSave("Turbine",Turbine)
+			iStatus = -999
+			printvalues()
+			Global_TurbineState = ""
+		end)
+
 	form.addRow(2)
 	form.addLabel({label="Sensor:"})
 	form.addSelectbox(sensoLalist,senso,true,sensorChanged)
     
 	form.addRow(2)
 	form.addLabel({label="Announcement:"})
-	form.addInputbox(switch, true, switchChanged)
+	form.addInputbox(switch, true,
+		function (value)
+			switch = value
+			system.pSave("switch",value) 
+		end)
     
 	form.addRow(1)
 	form.addLabel({label="dit71 v."..TStatusVersion.." ",font=FONT_MINI, alignRight=true})
@@ -114,16 +134,21 @@ end
 ----------------------------------------------------------------------
 -- Runtime functions
 local function loop()
-	local sense = system.getSensorByID(sid, sparam)
-	local Ansage 
+	local sense = system.getSensorByID(sid, sparam) 
 	local switchValue
-	
 	if(sense and sense.valid) then
 		if sense.value ~= iStatus then
 			iStatus = sense.value
-			Global_TurbineState,Ansage = GetStatusString(iStatus)
-			switchValue = system.getInputsVal(switch)
-			if Ansage and switchValue==1 then system.playFile(Ansage,AUDIO_QUEUE) end
+			if Turbine ~= "" then 
+				Global_TurbineState = allstat[Turbine][tostring(math.floor(iStatus))]
+				if Global_TurbineState then
+					switchValue = system.getInputsVal(switch)
+					if sound[Global_TurbineState] and switchValue==1 then system.playFile(sound[Global_TurbineState],AUDIO_QUEUE) end
+				else
+					Global_TurbineState = string.format("Value: %d", iStatus)
+				end
+			end
+			
 		end
 	end
     collectgarbage()
@@ -136,24 +161,39 @@ local function init()
 	sid = system.pLoad("sid",0)
 	sparam = system.pLoad("sparam",0)
 	switch = system.pLoad("switch")
+	Turbine = system.pLoad("Turbine","")
 	system.registerTelemetry(1,appName,1,printsStatus)
-	local i
-	local j = 0
-	local Test = ""
-	for i=-30,51,1 do
-	if string.sub(GetStatusString(i),1,6) ~="Value:" then
-		Test = Test..i.."-"..GetStatusString(i).."  "
-		j=j+1
-		if j==4 then
-		  j=0
-		  Test = Test.."\n"
+	
+	local key, value
+	local i = 0
+	local file
+	local lng = system.getLocale()
+	
+	file = io.readall("Apps/"..appName.."/lang.jsn")
+	local obj = json.decode(file)
+	if(obj) then
+		trans = obj[lng] or obj[obj.default]
+		sound = obj["sound"]
+	end
+	
+	file = io.readall("Apps/"..appName.."/status.jsn")
+	if file then
+		local objT = json.decode(file)
+		if objT then 
+			allstat = objT
 		end
 	end
+
+	for key,value in pairs(allstat) do
+		table.insert(tSel,key)
+		i = i + 1
+		if key == Turbine then Tnum = i end
 	end
-	print(Test)
+	printvalues()
+
 	collectgarbage()
 end
 ----------------------------------------------------------------------
-TStatusVersion = "1.0"
+TStatusVersion = "1.1"
 collectgarbage()
 return {init=init, loop=loop, author="dit71", version=TStatusVersion, name=appName}
