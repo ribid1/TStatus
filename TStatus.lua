@@ -102,7 +102,6 @@ end
 -- Draw the main form (Application inteface)
 local function initForm()
 	
-	
 	form.addRow(2)
 	form.addLabel({label="Turbine:"})
 	form.addSelectbox(tSel,Tnum,true,
@@ -169,14 +168,14 @@ local function init()
 	local file
 	local lng = system.getLocale()
 	
-	file = io.readall("Apps/"..appName.."/lang.jsn")
+	file = io.readall("Apps/TStatus/Tlang.jsn")
 	local obj = json.decode(file)
 	if(obj) then
 		trans = obj[lng] or obj[obj.default]
 		sound = obj["sound"]
 	end
 	
-	file = io.readall("Apps/"..appName.."/status.jsn")
+	file = io.readall("Apps/TStatus/TStatus.jsn")
 	if file then
 		local objT = json.decode(file)
 		if objT then 
@@ -194,6 +193,6 @@ local function init()
 	collectgarbage()
 end
 ----------------------------------------------------------------------
-TStatusVersion = "1.1"
+TStatusVersion = "1.2"
 collectgarbage()
 return {init=init, loop=loop, author="dit71", version=TStatusVersion, name=appName}
