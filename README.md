@@ -9,6 +9,8 @@ but the message is the same you will hear the message also, but if there is no w
 you will hear nothing until you get a wave file and edit the Tlang.jsn
 
 You can use the app in combination with the dbdis app: https://github.com/ribid1/dbdis
+
+Latest Version: 1.3
     
   
 ### Installation:
