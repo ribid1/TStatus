@@ -19,7 +19,7 @@
     "-17"   : "TempFail",
     "-16"   : "PowerFail",
     "-15"   : "IgnTimOut",
-    "-14"   : "FailSafe",
+    "-14"   : "Failsafe",
     "-13"   : "WatchDog",
     "-12"   : "GlowPlug!",
     "-11"   : "HiTempOff",

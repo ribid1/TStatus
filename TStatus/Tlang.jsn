@@ -1,5 +1,18 @@
 {
   "default":"en",
+  "en":{
+   	"TSensor":"Select Sensor:",
+	"Ttyp":"Turbine:",
+	"announcement":"Announcement:",
+    "window":"VSpeak ECU status",
+    "left": "left",
+    "right": "right"
+  },
+  "de":{
+    	"TSensor":"Sensor auswählen:",
+	"Ttyp":"Turbine:",
+	"announcement":"Schalter für Ansage:"
+  },
 
   "sound":{
     "TempHigh":"Temperature_high.wav",

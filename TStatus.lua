@@ -78,7 +78,7 @@ local function printvalues()
 	local key, value, n
 	local i=0
 	local a = {}
-	local Tvalues = "\n\n"
+	local Tvalues = ""
 	if Turbine ~= "" then
 		for n in pairs(allstat[Turbine]) do table.insert(a, tonumber(n)) end
 		table.sort(a)
@@ -103,7 +103,7 @@ end
 local function initForm()
 	
 	form.addRow(2)
-	form.addLabel({label="Turbine:"})
+	form.addLabel({label=trans.Ttyp})
 	form.addSelectbox(tSel,Tnum,true,
 		function (value)
 			Tnum = value
@@ -115,11 +115,11 @@ local function initForm()
 		end)
 
 	form.addRow(2)
-	form.addLabel({label="Sensor:"})
+	form.addLabel({label=trans.TSensor})
 	form.addSelectbox(sensoLalist,senso,true,sensorChanged)
     
 	form.addRow(2)
-	form.addLabel({label="Announcement:"})
+	form.addLabel({label=trans.announcement})
 	form.addInputbox(switch, true,
 		function (value)
 			switch = value
@@ -193,6 +193,6 @@ local function init()
 	collectgarbage()
 end
 ----------------------------------------------------------------------
-TStatusVersion = "1.2"
+TStatusVersion = "1.3"
 collectgarbage()
 return {init=init, loop=loop, author="dit71", version=TStatusVersion, name=appName}
