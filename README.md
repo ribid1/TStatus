@@ -10,8 +10,10 @@ you will hear nothing until you get a wave file and edit the Tlang.jsn
 
 You can use the app in combination with the dbdis app: https://github.com/ribid1/dbdis
 
-Latest Version: 1.3
-    
+Latest Version: 1.5
+
+### History:
+1.5: Now it is possible to set up two devices, for example two turbines in an airplane.
   
 ### Installation:
 * Copy the TStatus.lua or the TStatus.lc in the folder: \Apps
