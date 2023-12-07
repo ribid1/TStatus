@@ -23,30 +23,49 @@
 	----------------------------------------------------------------------------
 --]]
 
+-- setmetatable(_G, {
+	-- __newindex = function(array, key, value)
+		-- print(string.format("Changed _G: %s = %s", tostring(key), tostring(value)));
+		-- rawset(array, key, value);
+	-- end
+-- });
+
+
 collectgarbage()
 ----------------------------------------------------------------------
 -- Locals for the application
 local appName="T-Status"
 local sid, sparam, switch, senso
+local sid2, sparam2, switch2, senso2
 local sensoLalist = {"..."}
 local sensoIdlist = {"..."}
 local sensoPalist = {"..."}
-local iStatus = -999
+local iStatus, iStatus2 = -999, -999
 local allstat
 local tSel = {}
-local Turbine
-local Tnum = 1
+local Turbine, Turbine2
+local Tnum, Tnum2 = 1,1
 local trans, sound
+local TStatusVersion = "1.5"
+local labelStates = {}
+local labelStates2 = {}
+local imax = 1
 
 --global:
 Global_TurbineState = ""
-
+Global_TurbineState2 = ""
 --------------------------------------------------------------------------------
 -- Draw telemetry-window
 local function printsStatus()
 	--lcd.drawText(2,6,"T-Status:",FONT_MINI)
 	lcd.drawText(75-lcd.getTextWidth(FONT_BIG,Global_TurbineState)/2,1,Global_TurbineState,FONT_BIG)
 end
+
+local function printsStatus2()
+	--lcd.drawText(2,6,"T-Status:",FONT_MINI)
+	lcd.drawText(75-lcd.getTextWidth(FONT_BIG,Global_TurbineState2)/2,1,Global_TurbineState2,FONT_BIG)
+end
+
 --------------------------------------------------------------------------------
 -- Read available sensors for user to select
 local sensors = system.getSensors()
@@ -74,25 +93,51 @@ local function sensorChanged(value)
 	collectgarbage()
 end
 
+local function sensorChanged2(value)
+	senso2=value
+	system.pSave("senso2",value)
+	sid2 = string.format("%s", sensoIdlist[value])
+	sparam2 = string.format("%s", sensoPalist[value])
+	if (sid2 == "...") then
+		sid2 = 0
+		sparam2 = 0
+		Global_TurbineState2 = ""
+    end
+	system.pSave("sid2", sid2)
+	system.pSave("sparam2", sparam2)
+	collectgarbage()
+end
+
 local function printvalues()
-	local key, value, n
 	local i=0
 	local a = {}
-	local Tvalues = ""
 	if Turbine ~= "" then
 		for n in pairs(allstat[Turbine]) do table.insert(a, tonumber(n)) end
 		table.sort(a)
 		for key, value in ipairs(a) do
 			i = i+1
-			Tvalues = Tvalues..value.." - "..allstat[Turbine][tostring(value)]
-			if i < 3 then 
-				Tvalues = Tvalues..",  "
-			else
-				Tvalues = Tvalues.."\n"
-				i=0
-			end
+			form.setProperties(labelStates[i],{label = string.format("% 3s.",value).." - "..allstat[Turbine][tostring(value)]})
 		end
-		print(Tvalues)
+		for j = i+1,imax do
+			form.setProperties(labelStates[j],{label = ""})
+		end
+	end
+	collectgarbage()
+end
+
+local function printvalues2()
+	local i=0
+	local a = {}
+	if Turbine2 ~= "" then
+		for n in pairs(allstat[Turbine2]) do table.insert(a, tonumber(n)) end
+		table.sort(a)
+		for key, value in ipairs(a) do
+			i = i+1
+			form.setProperties(labelStates2[i],{label = string.format("% 3s.",value).." - "..allstat[Turbine2][tostring(value)]})
+		end
+		for j = i+1,imax do
+			form.setProperties(labelStates2[j],{label = ""})
+		end
 	end
 	collectgarbage()
 end
@@ -101,40 +146,69 @@ end
 ----------------------------------------------------------------------
 -- Draw the main form (Application inteface)
 local function initForm()
-	
+	form.setTitle("T - 1         T-Status         T - 2")
 	form.addRow(2)
-	form.addLabel({label=trans.Ttyp})
 	form.addSelectbox(tSel,Tnum,true,
 		function (value)
 			Tnum = value
 			Turbine = tSel[Tnum]
 			system.pSave("Turbine",Turbine)
 			iStatus = -999
-			printvalues()
 			Global_TurbineState = ""
-		end)
-
+			printvalues()
+		end, {alignRight = false})
+		
+	form.addSelectbox(tSel,Tnum2,true,
+		function (value)
+			Tnum2 = value
+			Turbine2 = tSel[Tnum2]
+			system.pSave("Turbine2",Turbine2)
+			iStatus2 = -999
+			Global_TurbineState2 = ""
+			printvalues2()
+		end, {alignRight = false})
+		
+	form.addRow(1)	
+	form.addLabel({label=trans.TSensor, width = 160 + lcd.getTextWidth(FONT_NORMAL,trans.TSensor)/2, alignRight = true})
 	form.addRow(2)
-	form.addLabel({label=trans.TSensor})
-	form.addSelectbox(sensoLalist,senso,true,sensorChanged)
-    
+	form.addSelectbox(sensoLalist,senso,true,sensorChanged, {alignRight = false})
+    form.addSelectbox(sensoLalist,senso2,true,sensorChanged2, {alignRight = false})
+	
+	form.addRow(1)
+	form.addLabel({label=trans.announcement, width = 160 + lcd.getTextWidth(FONT_NORMAL,trans.announcement)/2, alignRight = true})
 	form.addRow(2)
-	form.addLabel({label=trans.announcement})
 	form.addInputbox(switch, true,
 		function (value)
 			switch = value
 			system.pSave("switch",value) 
 		end)
-    
+	form.addInputbox(switch2, true,
+		function (value)
+			switch2 = value
+			system.pSave("switch2",value) 
+		end)	
+	
+	--form.addSpacer(300,20)
+	
+	for i=1,imax do	
+		form.addRow(2)
+		labelStates[i] = form.addLabel({label="",font=FONT_MINI})
+		labelStates2[i] = form.addLabel({label="",font=FONT_MINI})
+	end		
+	
 	form.addRow(1)
 	form.addLabel({label="dit71 v."..TStatusVersion.." ",font=FONT_MINI, alignRight=true})
+	printvalues()
+	printvalues2()
     collectgarbage()
 end
 ----------------------------------------------------------------------
 -- Runtime functions
 local function loop()
 	local sense = system.getSensorByID(sid, sparam) 
+	local sense2 = system.getSensorByID(sid2, sparam2)
 	local switchValue
+	local switchValue2
 	if(sense and sense.valid) then
 		if sense.value ~= iStatus then
 			iStatus = sense.value
@@ -150,23 +224,46 @@ local function loop()
 			
 		end
 	end
+	if(sense2 and sense2.valid) then
+		if sense2.value ~= iStatus2 then
+			iStatus2 = sense2.value
+			if Turbine2 ~= "" then 
+				Global_TurbineState2 = allstat[Turbine2][tostring(math.floor(iStatus2))]
+				if Global_TurbineState2 then
+					switchValue2 = system.getInputsVal(switch2)
+					if Global_TurbineState2 ~= Global_TurbineState and sound[Global_TurbineState2] and switchValue2==1 then system.playFile(sound[Global_TurbineState2],AUDIO_QUEUE) end
+				else
+					Global_TurbineState2 = string.format("Value: %d", iStatus2)
+				end
+			end
+			
+		end
+	end
     collectgarbage()
 end
 ----------------------------------------------------------------------
 -- Application initialization
 local function init()
-	system.registerForm(1,MENU_APPS,"T-Status",initForm)
+	system.registerForm(1,MENU_APPS,appName,initForm)
 	senso = system.pLoad("senso",0)
 	sid = system.pLoad("sid",0)
 	sparam = system.pLoad("sparam",0)
 	switch = system.pLoad("switch")
 	Turbine = system.pLoad("Turbine","")
-	system.registerTelemetry(1,appName,1,printsStatus)
 	
-	local key, value
+	senso2 = system.pLoad("senso2",0)
+	sid2 = system.pLoad("sid2",0)
+	sparam2 = system.pLoad("sparam2",0)
+	switch2 = system.pLoad("switch2")
+	Turbine2 = system.pLoad("Turbine2","")
+	
+	system.registerTelemetry(1,appName.." 1 - "..Turbine,1,printsStatus)
+	system.registerTelemetry(2,appName.." 2 - "..Turbine2,1,printsStatus2)
+	
 	local i = 0
 	local file
 	local lng = system.getLocale()
+	local j
 	
 	file = io.readall("Apps/TStatus/Tlang.jsn")
 	local obj = json.decode(file)
@@ -182,17 +279,26 @@ local function init()
 			allstat = objT
 		end
 	end
-
+	
 	for key,value in pairs(allstat) do
 		table.insert(tSel,key)
+		j = 0
+		for i in pairs(value) do
+			j = j + 1
+		end
+		if j > imax then imax = j end
+	end
+	table.sort(tSel)
+	
+	for _,key in pairs(tSel) do
 		i = i + 1
 		if key == Turbine then Tnum = i end
+		if key == Turbine2 then Tnum2 = i end
 	end
-	printvalues()
-
+		
 	collectgarbage()
 end
 ----------------------------------------------------------------------
-TStatusVersion = "1.3"
+
 collectgarbage()
 return {init=init, loop=loop, author="dit71", version=TStatusVersion, name=appName}
