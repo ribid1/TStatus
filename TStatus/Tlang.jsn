@@ -2,16 +2,15 @@
   "default":"en",
   "en":{
    	"TSensor":"Select Sensor:",
-	"Ttyp":"Turbine:",
-	"announcement":"Announcement:",
-    "window":"VSpeak ECU status",
-    "left": "left",
-    "right": "right"
+	"Ttyp":"Turbine 1:",
+	"announcement":"Switch for Announcement:",
+	"Ttyp2":"Turbine 2:"
   },
   "de":{
     	"TSensor":"Sensor auswählen:",
-	"Ttyp":"Turbine:",
-	"announcement":"Schalter für Ansage:"
+	"Ttyp":"Turbine 1:",
+	"announcement":"Schalter für Ansage:",
+	"Ttyp2":"Turbine 2:"
   },
 
   "sound":{
